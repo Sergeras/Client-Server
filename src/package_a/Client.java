@@ -2,6 +2,7 @@ package package_a;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,15 +33,27 @@ public class Client implements Runnable, Printable, IpValidator {
 		Scanner inScanner = new Scanner(System.in);
 		Printable.printIpIntro(ip);
 		ip = ipInputCheck(ip, inScanner);
-		FileOperations.getFile(inScanner);
+		file = FileOperations.getFile(inScanner);
 		
 		try(Socket socket = new Socket(ip, 4999);
 			InputStream inputStream = new BufferedInputStream(new FileInputStream(getFile()));
-			OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(getFile()));)
+			OutputStream outputStream = socket.getOutputStream();
+			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);)
 		{
+			byte[] byteArray = new byte [1024];
+			dataOutputStream.writeUTF(file.toString()); // send the name of file
+			dataOutputStream.flush();
+			inputStream.read(byteArray, file.toString().length(), byteArray.length-file.toString().length());
+			outputStream.write(byteArray, file.toString().length(), byteArray.length-file.toString().length());
+			outputStream.flush();
 			
 			
-			
+			while (inputStream.read() != -1) {
+				inputStream.read(byteArray, 0, byteArray.length);
+				outputStream.write(byteArray, 0, byteArray.length);
+				outputStream.flush();
+			}
+			System.out.println("file has been sent");
 		} catch (Exception e) {
 			System.err.println(e);
 		}
