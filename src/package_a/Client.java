@@ -1,13 +1,10 @@
 package package_a;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Path;
@@ -36,22 +33,18 @@ public class Client implements Runnable, Printable, IpValidator {
 		file = FileOperations.getFile(inScanner);
 		
 		try(Socket socket = new Socket(ip, 4999);
-			InputStream inputStream = new BufferedInputStream(new FileInputStream(getFile()));
-			OutputStream outputStream = socket.getOutputStream();
-			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);)
+			DataInputStream dataInputStream = new DataInputStream(new FileInputStream(getFile()));
+			DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());)
 		{
 			byte[] byteArray = new byte [1024];
 			dataOutputStream.writeUTF(file.toString()); // send the name of file
 			dataOutputStream.flush();
-			inputStream.read(byteArray, file.toString().length(), byteArray.length-file.toString().length());
-			outputStream.write(byteArray, file.toString().length(), byteArray.length-file.toString().length());
-			outputStream.flush();
-			
-			
-			while (inputStream.read() != -1) {
-				inputStream.read(byteArray, 0, byteArray.length);
-				outputStream.write(byteArray, 0, byteArray.length);
-				outputStream.flush();
+			//dataOutputStream.writeLong(file.length());
+						
+			while (dataInputStream.read() != -1) {
+				dataInputStream.read(byteArray, 0, byteArray.length);
+				dataOutputStream.write(byteArray, 0, byteArray.length);
+				dataOutputStream.flush();
 			}
 			System.out.println("file has been sent");
 		} catch (Exception e) {
