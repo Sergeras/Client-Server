@@ -39,12 +39,22 @@ public class Client implements Runnable, Printable, IpValidator {
 			byte[] byteArray = new byte [1024];
 			dataOutputStream.writeUTF(file.toString()); // send the name of file
 			dataOutputStream.flush();
-			//dataOutputStream.writeLong(file.length());
+			dataOutputStream.writeLong(file.length()); // send the length of file
+			dataOutputStream.flush();
+			Long counter = 0L;
 						
-			while (dataInputStream.read() != -1) {
-				dataInputStream.read(byteArray, 0, byteArray.length);
-				dataOutputStream.write(byteArray, 0, byteArray.length);
-				dataOutputStream.flush();
+			while (file.length() - counter > 0) {
+				
+				if (file.length() - counter > byteArray.length) {
+					dataInputStream.read(byteArray, 0, byteArray.length);
+					dataOutputStream.write(byteArray, 0, byteArray.length);
+					dataOutputStream.flush();
+				} else {
+					dataInputStream.read(byteArray, 0, (int) Math.subtractExact(file.length(), counter));
+					dataOutputStream.write(byteArray, 0, (int) Math.subtractExact(file.length(), counter));
+					dataOutputStream.flush();
+				}
+				counter += byteArray.length;
 			}
 			System.out.println("file has been sent");
 		} catch (Exception e) {

@@ -13,7 +13,6 @@ public interface FileOperations {
 				if (new File(inputString).exists()) { return new File(inputString);}
 				System.out.println("The file doesnt exist.");
 			}
-		
 	}
 	
 	public static void sendFile () {

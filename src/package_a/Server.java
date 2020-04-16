@@ -14,9 +14,6 @@ public class Server {
 	Path path = Paths.get(System.getProperty("user.dir") + "\\FileLocationServer\\");
 
 	public static void main (String[] args ) throws IOException {
-		Client client = new Client();
-		//client.intro();
-		
 		try(	
 			ServerSocket serverSocket = new ServerSocket(4999);
 			Socket socket = serverSocket.accept();
@@ -24,14 +21,23 @@ public class Server {
 			DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream("D:\\stazene soubory\\a.txt"));)
 		{
 			String fileName = dataInputStream.readUTF();
+			Long fileLenght = dataInputStream.readLong();
+			Long counter = 0L;
 			
 			byte [] byteArray = new byte [1024];
-			while (dataInputStream.read() != -1) {
-				dataInputStream.read(byteArray, 0, byteArray.length);
-				dataOutputStream.write(byteArray, 0, byteArray.length);
-				dataOutputStream.flush();
+			while (fileLenght - counter > 0) {
+				
+				if (fileLenght - counter > byteArray.length) {
+					dataInputStream.read(byteArray, 0, byteArray.length);
+					dataOutputStream.write(byteArray, 0, byteArray.length);
+					dataOutputStream.flush();
+				} else {
+					dataInputStream.read(byteArray, 0, (int) Math.subtractExact(fileLenght, counter));
+					dataOutputStream.write(byteArray, 0, (int) Math.subtractExact(fileLenght, counter));
+					dataOutputStream.flush();
+				}
+				counter += byteArray.length;
 			}
-			
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
