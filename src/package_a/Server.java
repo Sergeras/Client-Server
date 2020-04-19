@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Server implements FileOperations, Runnable {
-	Path path = Paths.get(System.getProperty("user.dir") + "\\FileLocationServer\\");
+	private Path path = Paths.get(System.getProperty("user.dir") + "\\FileLocationServer\\");
 	
 	public static void main (String[] args ) throws IOException {
 		Server server = new Server();
