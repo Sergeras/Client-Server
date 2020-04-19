@@ -5,14 +5,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
 
-public class Client implements Runnable, Printable, IpValidator {
+public class Client implements Runnable, Printable, IpValidator, FileOperations {
 	
 	private Path path = Paths.get(System.getProperty("user.dir") + "\\FileLocationClient");
 	private File file = path.toFile();
@@ -21,7 +20,6 @@ public class Client implements Runnable, Printable, IpValidator {
 		Client client = new Client();
 		Thread thread = new Thread(client);
 		thread.start();
-		
 	}
 	
 	@Override
@@ -30,40 +28,24 @@ public class Client implements Runnable, Printable, IpValidator {
 		Scanner inScanner = new Scanner(System.in);
 		Printable.printIpIntro(ip);
 		ip = ipInputCheck(ip, inScanner);
-		file = FileOperations.getFile(inScanner);
+		file = getFile(inScanner);
 		
 		try(Socket socket = new Socket(ip, 4999);
 			DataInputStream dataInputStream = new DataInputStream(new FileInputStream(getFile()));
 			DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());)
 		{
-			byte[] byteArray = new byte [1024];
 			dataOutputStream.writeUTF(file.toString()); // send the name of file
 			dataOutputStream.flush();
 			dataOutputStream.writeLong(file.length()); // send the length of file
 			dataOutputStream.flush();
-			Long counter = 0L;
-						
-			while (file.length() - counter > 0) {
-				
-				if (file.length() - counter > byteArray.length) {
-					dataInputStream.read(byteArray, 0, byteArray.length);
-					dataOutputStream.write(byteArray, 0, byteArray.length);
-					dataOutputStream.flush();
-				} else {
-					dataInputStream.read(byteArray, 0, (int) Math.subtractExact(file.length(), counter));
-					dataOutputStream.write(byteArray, 0, (int) Math.subtractExact(file.length(), counter));
-					dataOutputStream.flush();
-				}
-				counter += byteArray.length;
-			}
-			System.out.println("file has been sent");
+					
+			readAndSendFile(dataOutputStream, dataInputStream, file.length());
+			System.out.println("File has been sent");
 		} catch (Exception e) {
 			System.err.println(e);
 		}
 		inScanner.close();
 	}
-		
-	
 
 	private String ipInputCheck(String ip, Scanner inScanner) {
 			while (true) {
@@ -77,7 +59,6 @@ public class Client implements Runnable, Printable, IpValidator {
 						System.out.println("Thats not valid IP adress. Please provide valid IP adress or exit.");
 					}
 				}
-		
 			return ip;
 	}
 	
